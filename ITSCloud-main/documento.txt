@@ -1,3 +1,0 @@
-Da:alice@example.com,A:bob@example.com
-TiTolo:Incontro
-Messaggio:ciao
