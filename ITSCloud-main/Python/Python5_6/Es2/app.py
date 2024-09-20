@@ -24,10 +24,6 @@ def consultaold():
 def consultanew():
     return render_template('consultanew.html')
 
-
-
-
-
 @api.route('/gestisci_login', methods=['GET'])
 def acc1():
     nome = request.args.get('nome')
@@ -48,7 +44,7 @@ def acc():
                 return render_template('personale.html', nome=nome, cognome=cognome)
             else:
                 Utenti.append([nome,cognome])
-                return render_template('personale.html')
+                return render_template('accedi.html')
 
     
 """
