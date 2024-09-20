@@ -51,3 +51,23 @@ order by cognome desc
 select distinct p.nome , p.cognome , p.posizione
 from Persona p ,attivitaprogetto att ,attivitaprogetto att1 , Progetto pr
 where pr.nome = 'Pegasus' and p.id =att.persona and p.id = att2.persona and pr.id=att.progetto and pr.id =att2.progetto and att.id<>att2.id;
+
+--Quali sono il nome, il cognome e la posizione dei Professori Ordinari che hanno fatto almeno una assenza per malattia?
+select distinct p.nome , p.cognome , p.posizione, a.tipo
+from Persona p , assenza a 
+where a.tipo = 'Malattia' and p.posizione = 'Professore Ordinario'and p.id=a.persona
+
+--Quali sono il nome, il cognome e la posizione dei Professori Ordinari che hanno fatto più di una assenza per malattia?
+select distinct p.nome , p.cognome , p.posizione, a.tipo
+from Persona p , assenza a , assenza a1
+where a.tipo = 'Malattia' and p.posizione = 'Professore Ordinario'
+    and p.id=a.persona
+    and a.giorno <> a1.giorno
+	and a.persona = a1.persona
+
+--Quali sono il nome, il cognome e la posizione dei Ricercatori che hanno almeno un impegno per didattica?
+select distinct p.nome , p.cognome , p.posizione
+from Persona p, attivitanonprogettuale attn
+where p.posizione = 'Ricercatore' and attn.persona = p.id
+
+--
