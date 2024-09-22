@@ -4,76 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ITS</title>
-    <style>
-        body {
-            background-color: black;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-            position: relative;
-        }
-
-        .container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-            width: 600px;
-            position: relative;
-        }
-
-        h1 {
-            font-family: 'UnifrakturCook', cursive;
-            font-size: 2em;
-            display: inline-block;
-            vertical-align: middle;
-        }
-
-        .logo {
-            position: absolute;
-            top: 0px;
-            left: 10px;
-        }
-
-        .button-container {
-            margin-top: 20px;
-        }
-
-        img {
-            max-width: 100px;
-            height: auto;
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheet/styles.css') }}">
+    
     
 </head>
 <body>
         <div class="container">
-            <div class="container">
-            <img src="/static/nuovo.png" class='logo'> 
-            </div>
-            <div class="container">
+            <div class="logo-container">
+                <img src="/static/nuovo.png" class="logo" alt="Logo">
+                </div>
+            
             <h1>Inserisci il tuo Nome e Cognome</h1>
-            </div>
+            
             
         <div>
             <form action="/gestisci_login" method="get">
                 <div class="form-group">
                     <label for="nome">Nome:</label>
                     <input type="text" id="nome" name="nome" required>
-                    <label for="cognome">Cognome:</label>
-                    <input type="text" id="cognome" name="cognome" required>
+                    <label for="password">Password:</label>
+                    <input type="password" id="password" name="password" required>
+                
+                </div>
+                <div style="margin-top: 20px;"> <!-- aggiungi un margine superiore -->
                     <input type="submit" value="Invia">
+                </div>
             </form>
-            </div>
-            <div>
+            <div style="margin-top: 20px;"> <!-- aggiungi un margine superiore -->
                 Non sei registrato?<a href="/registrati">Registrati</a>
             </div>
         </div>
-    </form>
-</div>
     </div>
 </body>
 </html>
