@@ -1,5 +1,5 @@
 class Solution:
-    def minExtraChar(self, s: str, dictionary: list[str]) -> int:
+    def minExtraChar(self, s: str, dictionary: list[str]) -> int: #139
         stringa=""
         lista=[]
         for i in dictionary:
