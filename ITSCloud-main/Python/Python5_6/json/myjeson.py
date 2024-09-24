@@ -7,21 +7,24 @@ thisdict={"brend":"ford",
 thisdict2 = "{\"brand\":\"ford\",\"electric\":false,\"year\":1964,\"colors\":[\"red\", \"white\", \"blue\"]}"
 
 def Serializza(thisdict, path):
-    str=(json.dumps(thisdict))
+    str=json.dumps(thisdict)
     try:
-        with open(path,'a') as f:
-            f.write("\n")
-            f.write(str)
-            return True
+        with open(path,'w') as f:
+            
+            f.write(str)            
+        return True
     except Exception as e:
         return False
 
-def Deserializza(thisdict2):
+def Deserializza(path):
     try:
-        diz= json.loads(thisdict2)
-        return diz
+        with open(path,'r') as f:
+            
+            return json.load(f)
+    
     except Exception as e:
+        print(e)
         return None
 
 print(Serializza(thisdict,path))
-print(Deserializza(thisdict2))
+print(Deserializza(path))
