@@ -13,7 +13,6 @@ def Serializza(thisdict, path):
         Se l'operazione riesce,
         scrive la stringa JSON str nel file e restituisce True."""
         with open(path,'w') as f:
-            
             f.write(str)            
         return True
     except Exception as e:

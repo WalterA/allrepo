@@ -28,7 +28,7 @@ def stampa_diz(dData):
                                     questions+=1
     media=sum(options)//len(options)
     return f"Ci sono:{questions} domande, Sono presenti in maths:{maths} domande, ci sono in media: {media} risposte"
-dData='ITSCloud-main\Python\Python5_6\json\quiz.json'
+dData='ITSCloud-main/Python/Python5_6/json/quiz.json'
 print(stampa_diz(dData))
 
 #versione2 risposta singola
