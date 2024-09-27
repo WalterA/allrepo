@@ -1,0 +1,20 @@
+{
+    "RSSMRA80A01H501I": {
+      "nome": "Rossana",
+      "cognome": "Marini",
+      "dataNascita": "1980-01-01",
+      "codicefiscale":"RSSMRA80A01H501I"
+    },
+    "GNCLSS70B12F356K": {
+      "nome": "Giancarlo",
+      "cognome": "Santos",
+      "dataNascita": "1970-12-02",
+      "codicefiscale":"GNCLSS70B12F356K"
+    },
+    "VLDMRA85C23E478L": {
+      "nome": "Valentina",
+      "cognome": "Marchetti",
+      "dataNascita": "1985-03-23",
+      "codicefiscale":"VLDMRA85C23E478L"
+    }
+}
