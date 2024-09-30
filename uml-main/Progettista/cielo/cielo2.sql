@@ -1,8 +1,8 @@
 --1 Quante sono le compagnie che operano (sia in arrivo che in partenza) nei diversi aeroporti?
 SELECT a.codice , a.nome, count(distinct arr.comp)
-from aeroporto a, arrpart arr , arrpart arr1
-where arr.arrivo = a.codice and a.codice=arr1.partenza
-group by a.codice 
+from aeroporto a, arrpart arr 
+where arr.arrivo = a.codice or a.codice=arr.partenza
+group by a.codice , a.nome
 
 --2  Quanti sono i voli che partono dall ’aeroporto ’HTR’ e 
 --hanno una durata di almeno 100 minuti?

@@ -1,17 +1,15 @@
 --1 Quanti sono gli strutturati di ogni fascia?
-select a.posizione , count(a1.posizione)
-from persona a, persona a1
-where a.id = a1.id 
-group by a.posizione,a1.posizione
-order by a.posizione desc
+select a.posizione , count(*)
+from persona a
+group by a.posizione
 -- 2) Quanti sono gli strutturati con stipendio>=40000?
 select count (a.stipendio) as numero
 from persona a
 where a.stipendio >=40000
 -- 3) Quanti sono i progetti gia ’ finiti che superano i l budget di 50000?
-select count(pr.budget) as numero
-from progetto pr
-where pr.budget >50000
+select count(*) as numero
+from progetto pr 
+where pr.budget >50000 and pr.fine <= current_date;
  --4) Qual e’ la media, i l massimo e i l minimo delle ore
 -- delle attivita ’ relative al progetto "Pegasus"?
 select avg(a.oredurata)as media , min(a.oredurata) as minimo , max(a.oredurata) as massimo
@@ -22,14 +20,19 @@ where a.progetto = p.id and p.nome = 'Pegasus'
 select p.id, p.nome,p.cognome, avg(a.oredurata)as media , min(a.oredurata) as minimo , max(a.oredurata) as massimo
 from attivitaprogetto a ,progetto pr, persona p
 where a.progetto = pr.id and pr.nome = 'Pegasus' and a.persona = p.id
-group by p.id,p.nome , p.cognome, a.oredurata
-order by a.oredurata desc
+group by p.id,p.nome , p.cognome
+
 --6) Qual e’ i l numero totale di ore dedicate alla didattica
 --da ogni docente?
 select distinct att.persona , p.nome , p.cognome, att.oredurata
 from attivitanonprogettuale att ,persona p
 where att.persona = p.id and att.tipo = 'Didattica'
 group by att.persona , p.nome , p.cognome, att.oredurata
+
+select per.id , per.nome ,per.cognome , sum(anp.oredurata)
+from persona per ,attivitanonprogettuale anp
+where per.tipo ='Didattica' and anp.id =anp.persona
+group by  per.id , per.nome , per.cognome
 -- 7) Qual e’ la media , i l massimo e i l minimo degli stipendi dei ricercatori ?
 select  avg(p.stipendio)as media , min(p.stipendio) as minimo , max(p.stipendio) as massimo
 from persona p
@@ -49,7 +52,7 @@ GROUP BY
 --Quante ore "Ginevra Riva" ha dedicato ad ogni progetto
 -- nel quale ha lavorato?
 SELECT 
-    att.progetto , pr.nome , att.oredurata
+     pr.id,pr.nome , sum(att.oredurata)
 FROM 
     persona p ,attivitaprogetto att, progetto pr
 WHERE
@@ -57,14 +60,22 @@ WHERE
 	p.cognome = 'Riva'and
 	p.id = att.persona and
 	att.progetto = pr.id
+group by pr.id , pr.nome
 --10) Qual e’ i l nome dei progetti su cui lavorano piu ’ di
 --due strutturati ?
-select p.id , p.nome
-from attivitaprogetto a,progetto p
-where p.id = a.progetto and a.persona >=3
-group by p.id , p.nome
+select pro.nome
+from attivitaprogetto ap,progetto pro
+where pro.id = ap.progetto
+group by pro.nome
+having count(distinct ap.persona) >=2
 -- 11) Quali sono i professori associati che hanno lavorato
 -- su piu ’ di un progetto?
 SELECT distinct p.id , p.nome,p.cognome
 FROM attivitaprogetto att , persona p
 where p.posizione = 'Professore Associato' and p.id= att.persona
+
+select per.id ,per.nome, per.cognome
+from  persona per , attivitaprogetto ap
+where per.posizione='Professore associato' and per.id =ap.persona
+group by per.id ,per.nome, per.cognome
+having count(distinct ap.progetto) > 1
