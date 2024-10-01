@@ -1,7 +1,7 @@
 class Solution:
     def canArrange(self, arr: list[int], k: int) -> bool:
         index=0
-        index1=1
+        index1=1 #parti da sotto
         while  index != len(arr):
             var = arr[index]
             var1 = arr[index1]
