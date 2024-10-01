@@ -12,10 +12,10 @@ where arr.partenza = 'HTR' and arr.codice=v.codice and v.durataminuti<=100
 
 --3  Quanti sono gli aeroporti sui quali opera la compagnia ’Apitalia ’ , per
 --ogni nazione nella quale opera?
-select *
-from arrpart arr,luogoaeroporto la , aeroporto
-where arr.comp= 'Apitalia' 
---group by la.nazione NON HO CAPITO DOVE OPERA IO HO FRANCIA OLTRE A QUELLI DELLA SOLUZIONE
+select distinct la.nazione , count( arr.codice)
+from arrpart arr, luogoaeroporto la
+where arr.comp= 'Apitalia'
+group by arr.codice, la.nazione
 
 --4) Qual e’ la media, i l massimo e i l minimo della durata dei voli effettuati
 -- dalla compagnia ’MagicFly’?
