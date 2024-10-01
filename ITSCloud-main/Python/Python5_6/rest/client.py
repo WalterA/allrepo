@@ -24,6 +24,7 @@ def GetFi():
     fi={"codice fiscale":codF}
     return fi
 
+
 print("Operazioni disponibili:")
 print("1. Inserisci cittadino (es. atto di nascita)")
 print("2. Richiedi cittadino (es. cert. residenza)")
@@ -33,12 +34,11 @@ print("5. Esci")
 sOper = input("Cosa vuoi fare?")
 while(True):
     if sOper == "1":
-        print("Richiesto atto di nascita")
+        print("Richiesto nuovo cittadino")
         api_url = base_url + "/add_cittadino"
         jsonDataRequest = GetDatiCittadino()
         try:
             response = requests.post(api_url,json=jsonDataRequest)
-        
             print(response.json())
             print(response.status_code)
             print(response.headers["Content-Type"])
@@ -47,12 +47,33 @@ while(True):
         except:
             print("Problemi di comunicazione con il server, riprovapiù tardi")
     if sOper == "2":
-        print("Richiesto atto di nascita")
+        print("Richiesto codice fiscale cittadino")
         api_url = base_url + "/cerca_cittadino"
         jsonDataRequest = GetFi()
         try:
-            response = requests.post(api_url, json=jsonDataRequest)
-            response.raise_for_status()  # Raises an HTTPError for bad responses
+            response = requests.get(api_url, json=jsonDataRequest)
+            print(response.json())
+            print(response.status_code)
+            print(response.headers["Content-Type"])
+        except requests.exceptions.RequestException as e:
+            print(f"Problemi di comunicazione con il server: {e}")
+    if sOper == "3":
+        print("Richiesto atto di nascita")
+        api_url = base_url + "/modifica"
+        jsonDataRequest = GetDatiCittadino()
+        try:
+            response = requests.put(api_url, json=jsonDataRequest)
+            print(response.json())
+            print(response.status_code)
+            print(response.headers["Content-Type"])
+        except requests.exceptions.RequestException as e:
+            print(f"Problemi di comunicazione con il server: {e}")
+    if sOper == "4":
+        print("Richiesto atto di nascita")
+        api_url = base_url + "/elimina"
+        jsonDataRequest = GetFi()
+        try:
+            response = requests.delete(api_url, json=jsonDataRequest)
             print(response.json())
             print(response.status_code)
             print(response.headers["Content-Type"])

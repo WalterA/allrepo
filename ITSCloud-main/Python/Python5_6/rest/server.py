@@ -54,4 +54,45 @@ def CercaCittadino():
     else:
         return 'Content-Type not supported!', 401
 
+@api.route('/modifica', methods=['PUT'])
+def ModificaCittadino():
+    content_type = request.headers.get('Content-Type')
+    print("Ricevuta chiamata " + content_type)
+    if (content_type == 'application/json'):
+        jsonReq = request.json
+        sCodiceFiscale = jsonReq["codice fiscale"]
+        anagrafe = JsonDeserialize(sAnagrafe)
+        if sCodiceFiscale in anagrafe:
+            dNuovoCittadino = jsonReq
+            anagrafe[sCodiceFiscale] = dNuovoCittadino
+            JsonSerialize(anagrafe,sAnagrafe)
+            jsonResp = {"Esito":"000", "Msg":"ok", "Cittadino": dNuovoCittadino}
+            return json.dumps(jsonResp),200
+        else:
+            jsonResp = {"Esito":"001", "Msg":"Cittadino gia presente"}
+            return json.dumps(jsonResp),200
+    else:
+        return 'Content-Type not supported!',401
+    
+@api.route('/elimina', methods=['DELETE'])
+def eliminaCittadino():
+    content_type = request.headers.get('Content-Type')
+    print("Ricevuta chiamata " + content_type)
+    if (content_type == 'application/json'):
+        try:
+            jsonReq = request.json
+            sCodiceFiscale = jsonReq["codice fiscale"]
+            anagrafe = JsonDeserialize(sAnagrafe)
+            if sCodiceFiscale in anagrafe:
+                del  anagrafe[sCodiceFiscale]
+                JsonSerialize(anagrafe,sAnagrafe)
+                jsonResp = {"Esito": "000", "Msg": "ok", "Cittadino": "eliminato"}
+                return json.dumps(jsonResp), 200
+            else:
+                jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
+                return json.dumps(jsonResp), 200
+        except Exception as e:
+            return str(e), 500
+    else:
+        return 'Content-Type not supported!', 401
 api.run(host="127.0.0.1", port=8080)
