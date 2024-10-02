@@ -1,8 +1,3 @@
-allowed = "abc"
-
-x = ["a","b","c","ab","ac","bc","abc"]
-for i in x:
-    if allowed in i or i in allowed or  i in allowed[i]:
-        print(True)
-    else:
-        print( False)
+arr = [37,12,28,9,100,56,80,5,12]
+lista= list(range(1,len(arr)+1))
+print(lista)
