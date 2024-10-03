@@ -42,7 +42,7 @@ public class Cicli {
 		Scanner leggi = new Scanner(System.in);
 		for (int i = 0; i <= 10; i++) {
 			int n2 = leggi.nextInt();
-			if (n2 > 10) {
+			if (n2 >= 10) {
 				System.out.println("Maggiore");
 			} else {
 				System.out.println("Minore");
