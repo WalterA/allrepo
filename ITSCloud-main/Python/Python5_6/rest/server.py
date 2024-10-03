@@ -1,17 +1,36 @@
 from flask import Flask, json, request
 from myjson import JsonSerialize,JsonDeserialize
 
+sOperatori = "./operatori.json"
 sAnagrafe = "./anagrafe.json"
 api = Flask(__name__)
 
-#mettere una lista di liste dove ogni lista è un cittadino
-
-#la chiave è il codice fiscale
-#add cittadino
-#read cittadino
-#update cittadino
-#delete cittadino
-
+@api.route('/operatore',methods=['POST'])
+def verop():
+    content_type = request.headers.get('Content-Type')
+    print("Ricevuta chiamata " + content_type)
+    if (content_type == 'application/json'):
+        try:
+            jsonReq = request.json
+            sId = jsonReq["ID"]
+            sPass = jsonReq["Password"]
+            operatori = JsonDeserialize(sOperatori)
+            
+            if sId in operatori:
+                op = operatori[sId] 
+                if sPass == op["password"]:  
+                    jsonResp = {"Esito": "000", "Msg": "Buon lavoro"}
+                    return json.dumps(jsonResp), 200
+                else:
+                    jsonResp = {"Esito": "001", "Msg": "Dati non validi"}
+                    return json.dumps(jsonResp), 200
+            else:
+                jsonResp = {"Esito": "001", "Msg": "Dati non validi"}
+                return json.dumps(jsonResp), 200
+        except Exception as e:
+            return str(e), 500
+    else:
+        return 'Content-Type not supported!', 401
 
 @api.route('/add_cittadino', methods=['POST'])
 def GestisciAddCittadino():

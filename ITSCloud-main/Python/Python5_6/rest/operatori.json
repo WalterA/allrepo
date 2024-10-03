@@ -1,0 +1,18 @@
+{
+    "001": {
+        "nome": "Mario",
+        "cognome": "Retti",
+        "data nascita": "22/05/2010",
+        "codice fiscale": "dfrcde23t44h501u",
+        "password" : "MarioRetti001",  
+        "ID":"001"
+    },
+    "002": {
+        "nome": "Maria",
+        "cognome": "Retti",
+        "data nascita": "22/05/2010",
+        "codice fiscale": "dfrcde23t44h501u",
+        "password" : "MariaRetti002",  
+        "ID":"002"
+    }
+}
