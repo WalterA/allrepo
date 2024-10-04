@@ -14,12 +14,14 @@ def verop():
             jsonReq = request.json
             sId = jsonReq["ID"]
             sPass = jsonReq["Password"]
+            
             operatori = JsonDeserialize(sOperatori)
             
             if sId in operatori:
                 op = operatori[sId] 
-                if sPass == op["password"]:  
-                    jsonResp = {"Esito": "000", "Msg": "Buon lavoro"}
+                if sPass == op["password"]:
+                    adim = op["Adim"]  
+                    jsonResp = {"Esito": "000", "Msg": "Buon lavoro" , "operatore" : adim, "ID":sId, "Password":sPass}
                     return json.dumps(jsonResp), 200
                 else:
                     jsonResp = {"Esito": "001", "Msg": "Dati non validi"}
@@ -40,17 +42,24 @@ def GestisciAddCittadino():
         jsonReq = request.json
         sCodiceFiscale = jsonReq["codice fiscale"]
         anagrafe = JsonDeserialize(sAnagrafe)
-        if sCodiceFiscale not in anagrafe:
-            dNuovoCittadino = jsonReq
-            anagrafe[sCodiceFiscale] = dNuovoCittadino
-            JsonSerialize(anagrafe,sAnagrafe)
-            jsonResp = {"Esito":"000", "Msg":"ok", "Cittadino": dNuovoCittadino}
-            return json.dumps(jsonResp),200
-        else:
-            jsonResp = {"Esito":"001", "Msg":"Cittadino gia presente"}
-            return json.dumps(jsonResp),200
+        op=JsonDeserialize(sOperatori)
+        sId = jsonReq["ID"]
+        sPass = jsonReq["Password"]
+        if id in op:
+                if sCodiceFiscale not in anagrafe:
+                    dNuovoCittadino = jsonReq
+                    anagrafe[sCodiceFiscale] = dNuovoCittadino
+                    JsonSerialize(anagrafe,sAnagrafe)
+                    jsonResp = {"Esito":"000", "Msg":"ok", "Cittadino": dNuovoCittadino,  "ID":sId, "Password":sPass} 
+                    return json.dumps(jsonResp),200
+                else:
+                    jsonResp = {"Esito":"001", "Msg":"Cittadino gia presente"}
+                    return json.dumps(jsonResp),2007
+        #else:
+            
     else:
         return 'Content-Type not supported!',401
+            
 
 @api.route('/cerca_cittadino', methods=['GET'])
 def CercaCittadino():
@@ -114,4 +123,5 @@ def eliminaCittadino():
             return str(e), 500
     else:
         return 'Content-Type not supported!', 401
-api.run(host="127.0.0.1", port=8080)
+    
+api.run(host="127.0.0.1", port=8080, ssl_context='adhoc')
