@@ -22,13 +22,22 @@ group by arr.codice, la.nazione
 SELECT avg(v.durataminuti), max(v.durataminuti), min(v.durataminuti)
 FROM VOLO v
 WHERE v.comp = 'MagicFly'
+
 --5) Qual e’ l ’anno di fondazione della compagnia piu’ vecchia che opera in
 -- ognuno degli aeroporti?
---5) Qual e’ l ’anno di fondazione della compagnia piu’ vecchia che opera in
--- ognuno degli aeroporti?
-select a.codice, a.nome,  c.annofondaz
-from aeroporto a, compagnia c , arrpart arr
---where c.nome=v.comp
-where a.codice=arr.arrivo  
-group by a.codice, a.nome, c.annofondaz
-having count (codice)
+SELECT 
+    a.codice AS codice_aeroporto,
+    a.nome AS nome_aeroporto,
+    MIN(c.annofondaz) AS anno_fondazione
+FROM 
+    Aeroporto a, 
+    Compagnia c, 
+    ArrPart ap
+WHERE 
+    (ap.arrivo = a.codice OR ap.partenza = a.codice)
+    AND ap.comp = c.nome
+GROUP BY 
+    a.codice, a.nome
+ORDER BY 
+    a.codice;
+

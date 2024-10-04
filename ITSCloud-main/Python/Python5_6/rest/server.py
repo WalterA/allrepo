@@ -1,5 +1,5 @@
 from flask import Flask, json, request
-from myjson import JsonSerialize,JsonDeserialize
+from myjson import JsonSerialize, JsonDeserialize
 
 sOperatori = "./operatori.json"
 sAnagrafe = "./anagrafe.json"
@@ -9,25 +9,24 @@ api = Flask(__name__)
 def verop():
     content_type = request.headers.get('Content-Type')
     print("Ricevuta chiamata " + content_type)
-    if (content_type == 'application/json'):
+    if content_type == 'application/json':
         try:
             jsonReq = request.json
             sId = jsonReq["ID"]
             sPass = jsonReq["Password"]
-            
             operatori = JsonDeserialize(sOperatori)
             
             if sId in operatori:
-                op = operatori[sId] 
+                op = operatori[sId]
                 if sPass == op["password"]:
-                    adim = op["Adim"]  
-                    jsonResp = {"Esito": "000", "Msg": "Buon lavoro" , "operatore" : adim, "ID":sId, "Password":sPass}
+                    adim = op["Adim"]
+                    jsonResp = {"Esito": "000", "Msg": "Buon lavoro", "operatore": adim, "ID": sId, "Password": sPass}
                     return json.dumps(jsonResp), 200
                 else:
                     jsonResp = {"Esito": "001", "Msg": "Dati non validi"}
                     return json.dumps(jsonResp), 200
             else:
-                jsonResp = {"Esito": "001", "Msg": "Dati non validi"}
+                jsonResp = {"Esito": "001", "Msg": "Operatore non trovato"}
                 return json.dumps(jsonResp), 200
         except Exception as e:
             return str(e), 500
@@ -38,44 +37,57 @@ def verop():
 def GestisciAddCittadino():
     content_type = request.headers.get('Content-Type')
     print("Ricevuta chiamata " + content_type)
-    if (content_type == 'application/json'):
+    if content_type == 'application/json':
         jsonReq = request.json
         sCodiceFiscale = jsonReq["codice fiscale"]
         anagrafe = JsonDeserialize(sAnagrafe)
-        op=JsonDeserialize(sOperatori)
+        op = JsonDeserialize(sOperatori)
         sId = jsonReq["ID"]
         sPass = jsonReq["Password"]
-        if id in op:
-                if sCodiceFiscale not in anagrafe:
-                    dNuovoCittadino = jsonReq
-                    anagrafe[sCodiceFiscale] = dNuovoCittadino
-                    JsonSerialize(anagrafe,sAnagrafe)
-                    jsonResp = {"Esito":"000", "Msg":"ok", "Cittadino": dNuovoCittadino,  "ID":sId, "Password":sPass} 
-                    return json.dumps(jsonResp),200
-                else:
-                    jsonResp = {"Esito":"001", "Msg":"Cittadino gia presente"}
-                    return json.dumps(jsonResp),2007
-        #else:
-            
+
+        # Verifica che l'operatore esista
+        if sId in op:
+            # Verifica che il cittadino non esista già
+            if sCodiceFiscale not in anagrafe:
+                dNuovoCittadino = jsonReq
+                anagrafe[sCodiceFiscale] = dNuovoCittadino
+                JsonSerialize(anagrafe, sAnagrafe)
+                jsonResp = {"Esito": "000", "Msg": "ok", "Cittadino": dNuovoCittadino, "ID": sId, "Password": sPass}
+                return json.dumps(jsonResp), 200
+            else:
+                jsonResp = {"Esito": "001", "Msg": "Cittadino già presente"}
+                return json.dumps(jsonResp), 200  # Modificato codice di stato errato
+        else:
+            jsonResp = {"Esito": "001", "Msg": "Operatore non trovato"}
+            return json.dumps(jsonResp), 200  # Modificato codice di stato errato
     else:
-        return 'Content-Type not supported!',401
-            
+        return 'Content-Type not supported!', 401
 
 @api.route('/cerca_cittadino', methods=['GET'])
 def CercaCittadino():
     content_type = request.headers.get('Content-Type')
     print("Ricevuta chiamata " + content_type)
-    if (content_type == 'application/json'):
+    if content_type == 'application/json':
         try:
             jsonReq = request.json
             sCodiceFiscale = jsonReq["codice fiscale"]
             anagrafe = JsonDeserialize(sAnagrafe)
-            if sCodiceFiscale in anagrafe:
-                dCittadino = anagrafe[sCodiceFiscale]
-                jsonResp = {"Esito": "000", "Msg": "ok", "Cittadino": dCittadino}
-                return json.dumps(jsonResp), 200
+            op = JsonDeserialize(sOperatori)
+            sId = jsonReq["ID"]
+            sPass = jsonReq["Password"]
+            
+            # Verifica se l'operatore esiste
+            if sId in op:
+                # Controlla se il cittadino esiste in anagrafe
+                if sCodiceFiscale in anagrafe:
+                    dCittadino = anagrafe[sCodiceFiscale]
+                    jsonResp = {"Esito": "000", "Msg": "ok", "Cittadino": dCittadino, "ID": sId, "Password": sPass}
+                    return json.dumps(jsonResp), 200
+                else:
+                    jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
+                    return json.dumps(jsonResp), 200
             else:
-                jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
+                jsonResp = {"Esito": "001", "Msg": "Operatore non trovato"}
                 return json.dumps(jsonResp), 200
         except Exception as e:
             return str(e), 500
@@ -86,34 +98,38 @@ def CercaCittadino():
 def ModificaCittadino():
     content_type = request.headers.get('Content-Type')
     print("Ricevuta chiamata " + content_type)
-    if (content_type == 'application/json'):
+    if content_type == 'application/json':
         jsonReq = request.json
         sCodiceFiscale = jsonReq["codice fiscale"]
         anagrafe = JsonDeserialize(sAnagrafe)
+        
+        # Verifica se il cittadino esiste
         if sCodiceFiscale in anagrafe:
             dNuovoCittadino = jsonReq
-            anagrafe[sCodiceFiscale] = dNuovoCittadino
-            JsonSerialize(anagrafe,sAnagrafe)
-            jsonResp = {"Esito":"000", "Msg":"ok", "Cittadino": dNuovoCittadino}
-            return json.dumps(jsonResp),200
+            anagrafe[sCodiceFiscale] = dNuovoCittadino  # Modifica i dati del cittadino
+            JsonSerialize(anagrafe, sAnagrafe)
+            jsonResp = {"Esito": "000", "Msg": "ok", "Cittadino": dNuovoCittadino}
+            return json.dumps(jsonResp), 200
         else:
-            jsonResp = {"Esito":"001", "Msg":"Cittadino gia presente"}
-            return json.dumps(jsonResp),200
+            jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}  # Corretto messaggio di errore
+            return json.dumps(jsonResp), 200
     else:
-        return 'Content-Type not supported!',401
-    
+        return 'Content-Type not supported!', 401
+
 @api.route('/elimina', methods=['DELETE'])
 def eliminaCittadino():
     content_type = request.headers.get('Content-Type')
     print("Ricevuta chiamata " + content_type)
-    if (content_type == 'application/json'):
+    if content_type == 'application/json':
         try:
             jsonReq = request.json
             sCodiceFiscale = jsonReq["codice fiscale"]
             anagrafe = JsonDeserialize(sAnagrafe)
+
+            # Verifica se il cittadino esiste
             if sCodiceFiscale in anagrafe:
-                del  anagrafe[sCodiceFiscale]
-                JsonSerialize(anagrafe,sAnagrafe)
+                del anagrafe[sCodiceFiscale]  # Elimina il cittadino
+                JsonSerialize(anagrafe, sAnagrafe)
                 jsonResp = {"Esito": "000", "Msg": "ok", "Cittadino": "eliminato"}
                 return json.dumps(jsonResp), 200
             else:
@@ -123,5 +139,5 @@ def eliminaCittadino():
             return str(e), 500
     else:
         return 'Content-Type not supported!', 401
-    
+
 api.run(host="127.0.0.1", port=8080, ssl_context='adhoc')
