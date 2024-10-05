@@ -41,3 +41,53 @@ GROUP BY
 ORDER BY 
     a.codice;
 
+-- 6 Quante sono le nazioni (diverse) raggiungibili da ogni nazione tramite uno o più voli?
+SELECT la1.nazione AS nazione_partenza, COUNT(DISTINCT la2.nazione) AS nazioni_raggiungibili
+FROM arrpart ap
+JOIN luogoaeroporto la1 ON ap.partenza = la1.aeroporto
+JOIN luogoaeroporto la2 ON ap.arrivo = la2.aeroporto
+GROUP BY la1.nazione;
+--7  Qual e’ la durata media dei voli che partono da ognuno degli aeroporti?
+select a.codice , a.nome , avg(v.durataminuti) as media_durata
+from  arrpart ap
+join aeroporto a on a.codice = ap.partenza
+join volo v ON v.codice = ap.codice 
+group by a.nome, a.codice;
+--8 Qual e’ la durata complessiva dei voli operati da ognuna delle compagnie fondate a partire dal 1950?
+select v.comp as nome , sum(v.durataminuti) as durata_tot
+from volo v
+join compagnia c on v.comp = c.nome and c.annofondaz > 1950
+group by v.comp ;
+
+--9 Quali sono gli aeroporti nei quali operano esattamente due compagnie?
+SELECT 
+  a.codice, 
+  a.nome
+FROM 
+  aeroporto a
+JOIN 
+  arrpart ap ON a.codice = ap.partenza OR a.codice = ap.arrivo
+GROUP BY 
+  a.codice, a.nome
+HAVING 
+  COUNT(DISTINCT ap.comp) = 2;
+
+-- 10 Quali sono le citta ’ con almeno due aeroporti?
+select  la.citta
+from luogoaeroporto la
+group by la.citta
+HAVING 
+  COUNT(DISTINCT la.aeroporto) = 2;
+-- 11) Qual e’ i l nome delle compagnie i cui voli hanno una durata media maggiore di 6 ore?
+select v.comp
+from volo v
+join compagnia c on c.nome = v.comp
+group by v.comp
+having avg (durataminuti) > 360;
+ --12 Qual e’ i l nome delle compagnie i cui voli hanno tutti una durata
+ --maggiore di 100 minuti?
+select v.comp
+from volo v 
+group by v.comp
+HAVING 
+  MIN(v.durataminuti) > 100;
