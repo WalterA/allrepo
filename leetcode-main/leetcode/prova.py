@@ -3,7 +3,10 @@ index=0
 gruppo = arr[1:3]
 k=3
 print(gruppo)
-for i in range(0 , len(arr), k):
-    k+=i
-    print(arr[i:k])
+l=enumerate(arr)
+for i ,v in l:
+    print(i,v)
+# for i,v in enumerate(arr):
+#     k+=i
+#     print(arr[i:k])
     
