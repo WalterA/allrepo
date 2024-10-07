@@ -45,7 +45,7 @@ class Solution:
             if i == fine:
                 return maxy
         
-        #SOLUZIONE DEQUE GPT
+        #SOLUZIONE DEQU     
         from collections import deque
         from typing import List
 

@@ -23,7 +23,7 @@ class Solution:
         return maxy
         """
                 
-        class Solution:
+class Solution:
     def maximumSubarraySum(self, nums: list[int], k: int) -> int:
         max_sum = 0
         current_sum = 0

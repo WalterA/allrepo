@@ -6,9 +6,9 @@ group by a.codice , a.nome
 
 --2  Quanti sono i voli che partono dall ’aeroporto ’HTR’ e 
 --hanno una durata di almeno 100 minuti?
-SELECT count(arr.partenza) as "num_voli"
+SELECT count(*) as "num_voli"
 from arrpart arr, volo v
-where arr.partenza = 'HTR' and arr.codice=v.codice and v.durataminuti<=100
+where arr.partenza = 'HTR' and arr.codice=v.codice and v.durataminuti<=100and arr.comp=v.comp
 
 --3  Quanti sono gli aeroporti sui quali opera la compagnia ’Apitalia ’ , per
 --ogni nazione nella quale opera?
