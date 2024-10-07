@@ -1,3 +1,9 @@
 arr = [37,12,28,9,100,56,80,5,12]
-lista= list(range(1,len(arr)+1))
-print(lista)
+index=0
+gruppo = arr[1:3]
+k=3
+print(gruppo)
+for i in range(0 , len(arr), k):
+    k+=i
+    print(arr[i:k])
+    
