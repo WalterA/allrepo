@@ -1,0 +1,18 @@
+Progetto RistoBook - Raffinamento dei requisiti
+
+1. Clienti
+	1.1 nome str
+	1.2 e-mail str
+2. Ristorante
+	2.1 nome str
+	2.2 PV str num
+	2.3 indirizzo record
+	2.4 città str
+	2.5 tipologia cuc enupla
+3. Prenotazione
+	3.1 giorno date
+	3.2 ora date
+	3.3 numero int
+4. Promozioni
+	4.1 sconto real funzione
+	
