@@ -1,23 +1,19 @@
 class Solution:
     def minSwaps(self, s: str) -> int:
-        #da finire
-        fine=2
-        copy=s
-        for i in range(len(s)):
-            if len(s) == 2 and s[i:fine]== "[]":
-                return 0 
+        imbalance = 0
+        max_imbalance = 0
+        
+        
+        for char in s:
+            if char == '[':
+                imbalance += 1
             else:
-                if s[i:fine] == "[]":
-                    copy = copy.replace("[", "",1)
-                    copy = copy.replace("]", "",1)
-                else:
-                    fine+=1
-                    if fine == len(s):
-                        if copy:
-                            
-                            return len(copy) //2
-                        else:
-                            return 0
+                imbalance -= 1
+            
+         
+            max_imbalance = max(max_imbalance, -imbalance)
+        
+        return (max_imbalance + 1) // 2
                    
         
 s="]]][[["
