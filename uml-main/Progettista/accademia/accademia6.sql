@@ -24,19 +24,15 @@ group by p.id,p.nome , p.cognome
 
 --6) Qual e’ i l numero totale di ore dedicate alla didattica
 --da ogni docente?
-select distinct att.persona , p.nome , p.cognome, att.oredurata
-from attivitanonprogettuale att ,persona p
-where att.persona = p.id and att.tipo = 'Didattica'
-group by att.persona , p.nome , p.cognome, att.oredurata
-
-select per.id , per.nome ,per.cognome , sum(anp.oredurata)
-from persona per ,attivitanonprogettuale anp
-where per.tipo ='Didattica' and anp.id =anp.persona
-group by  per.id , per.nome , per.cognome
+select sum(anp.oredurata) as numero_ore_didattica
+from attivitanonprogettuale anp
+where  anp.tipo = 'Didattica' --anp.persona ='3' and
+group by anp.persona
 -- 7) Qual e’ la media , i l massimo e i l minimo degli stipendi dei ricercatori ?
 select  avg(p.stipendio)as media , min(p.stipendio) as minimo , max(p.stipendio) as massimo
 from persona p
 where p.posizione = 'Ricercatore'
+
 -- 8) Quali sono le medie , i massimi e i minimi degli stipendi
  --dei ricercatori , dei professori
  --associati e dei professori ordinari?
