@@ -1,5 +1,11 @@
 from flask import Flask, json, request
 from myjson import JsonSerialize, JsonDeserialize
+from db_postgress import dbclient
+import sys
+import os
+import os.path
+import time
+from db_postgress import dbclient as db
 
 sOperatori = "./operatori.json"
 sAnagrafe = "./anagrafe.json"
@@ -71,24 +77,30 @@ def CercaCittadino():
         try:
             jsonReq = request.json
             sCodiceFiscale = jsonReq["codice fiscale"]
+            """
             anagrafe = JsonDeserialize(sAnagrafe)
             op = JsonDeserialize(sOperatori)
             sId = jsonReq["ID"]
-            sPass = jsonReq["Password"]
+            sPass = jsonReq["Password"]"""
             
             # Verifica se l'operatore esiste
-            if sId in op:
+            """if sId in op:
                 # Controlla se il cittadino esiste in anagrafe
                 if sCodiceFiscale in anagrafe:
-                    dCittadino = anagrafe[sCodiceFiscale]
-                    jsonResp = {"Esito": "000", "Msg": "ok", "Cittadino": dCittadino, "ID": sId, "Password": sPass}
-                    return json.dumps(jsonResp), 200
-                else:
-                    jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
-                    return json.dumps(jsonResp), 200
-            else:
-                jsonResp = {"Esito": "001", "Msg": "Operatore non trovato"}
+                    dCittadino = anagrafe[sCodiceFiscale]"""
+            cur = db.connect()
+            if cur is None:
+                print("Errore connessione al DB")
+                sys.exit()
+
+            sQuery = "select * from cittadini where cittadini.codice_fiscale;"
+            iNumRows = db.read_in_db(cur,sQuery)
+            for ii in range(0,iNumRows):
+                myrow = db.read_next_row(cur)
+                print(myrow)
+                jsonResp = {"Esito": "000", "Msg": "ok", "clienti" : myrow}
                 return json.dumps(jsonResp), 200
+            
         except Exception as e:
             return str(e), 500
     else:
