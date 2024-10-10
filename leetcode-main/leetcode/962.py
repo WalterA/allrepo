@@ -1,19 +1,18 @@
 class Solution:
     def maxWidthRamp(self, nums: list[int]) -> int:
-        massimo=0
-        inizio =0
-        fine =len(nums)-1
-        while inizio != len(nums)-1:
-            if inizio < fine and nums[inizio]<=nums[fine]:
-                    temp=fine-inizio
+        massimo = 0
+        lista= list(enumerate(nums))
+        ultimo =lista.pop()
+        while lista:
+            for i in lista:
+                if i[0] < ultimo[0] and i[1] <= ultimo[1]:
+                    temp= ultimo[0] -i[0]
                     if massimo < temp:
                         massimo = temp
-            fine-=1
-            if fine == inizio:
-                fine=len(nums)-1
-                inizio +=1
+            ultimo =lista.pop()
+                
+                    
         return massimo
-            
 n=[6,0,8,2,1,5]
 sol=Solution()
 print(sol.maxWidthRamp(n))
