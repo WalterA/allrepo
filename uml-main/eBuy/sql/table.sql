@@ -31,7 +31,7 @@ CREATE TABLE Utente (
     PRIMARY key (nome)
 );
 CREATE TABLE Privato(
-    Utente VARCHAR(255) ,
+    Utente VARCHAR(255)  NOT NULL,
     foreign key (Utente) references Utente(nome) 
 );
 
@@ -45,7 +45,7 @@ CREATE TABLE VenditoreProf (
 CREATE TABLE Bid (
     istante timestamp,
     prezzo RealGEZ NOT NULL,
-    Privato VARCHAR(255) ,
+    Privato VARCHAR(255) not null ,
     PostaAsta INT ,
     foreign key (PostaAsta) references PostAsta(Post)
     foreign key (Privato) references Privato(Utente) 
@@ -89,6 +89,7 @@ CREATE TABLE Categoria(
     nome VARCHAR(255) not null,
     primary key(nome)
 );
+
 CREATE TABLE Valuta (
     nome VARCHAR(255) not null,
     primary key (nome)
@@ -98,6 +99,7 @@ CREATE TABLE PostCompraloSubito(
      Post INT,
      foreign key (Post) references Post(id_post)
 );
+
 CREATE TABLE Acquirente(
     Privato VARCHAR(255),
     PostCompraloSubito INT,
