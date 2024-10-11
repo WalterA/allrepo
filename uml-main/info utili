@@ -11,3 +11,12 @@ psql -U postgres claccademia.sql per rimetterlo
 
 docker build -t myserve .
 docker run -p 8085:8085 -t myserve
+
+
+
+
+
+
+
+docker compose down
+docker compose up -d
