@@ -121,6 +121,7 @@ SELECT
     PO.numero_giorni_assenza
 FROM 
     ProfessoriOrdinari PO
+    
 JOIN 
     MediaAssenzeProfessoriAssociati MA ON PO.numero_giorni_assenza > MA.media_assenze;
 
