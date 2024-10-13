@@ -1,161 +1,222 @@
-from flask import Flask, request
-from comunicasever import dbclient as db
-import sys
+from flask import Flask, json, request
+from configparser import ConfigParser
+import psycopg2
+
+# Funzione per leggere la configurazione del database
+def config(filename='database.ini', section='postgresql'):
+    parser = ConfigParser()
+    parser.read(filename)
+
+    db = {}
+    if parser.has_section(section):
+        params = parser.items(section)
+        for param in params:
+            db[param[0]] = param[1]
+    else:
+        raise Exception(f'Section {section} not found in the {filename} file')
+
+    return db
+
+# Connessione al database
+conn = None
+
+def connect():
+    print('Connecting to the PostgreSQL database...')
+    global conn
+    try:
+        params = config()
+        conn = psycopg2.connect(**params)
+        cur = conn.cursor()
+        return cur
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        return None
+
+# Funzione per chiudere la connessione
+def close(cur):
+    global conn
+    if cur:
+        cur.close()
+    if conn:
+        conn.close()
 
 api = Flask(__name__)
 
+# Autenticazione dell'operatore
 @api.route('/operatore', methods=['POST'])
 def verop():
     content_type = request.headers.get('Content-Type')
-    print("Ricevuta chiamata " + content_type)
-
-    if content_type == 'application/x-www-form-urlencoded':
+    if content_type == 'application/json':
         try:
-            sId = request.form["ID"]
-            sPass = request.form["Password"]
-            print(f"Ricevuto ID: {sId}, Password: {sPass}")  # Debug
+            jsonReq = request.json
+            sId = jsonReq["ID"]
+            sPass = jsonReq["Password"]
             
-            cur = db.connect()
-            if cur is None:
-                print("Errore connessione al DB")
-                return "Errore interno", 500
-            
-            # Usa i parametri corretti
-            sQuery = "SELECT id, password FROM Operatori WHERE id = %s AND password = %s;"
-            cur.execute(sQuery, (sId, sPass))  # Passa i parametri come tupla
-            result = cur.fetchone()
-            print(f"Risultato della query: {result}")  # Debug
-            
-            if result:
-                return "Buon lavoro", 200
+            cur = connect()
+            query = f"SELECT id, password FROM operatori WHERE id = '{sId}'"
+            cur.execute(query)
+            operatore = cur.fetchone()
+
+            if operatore and sPass == operatore[1]:
+                jsonResp = {"Esito": "000", "Msg": "Buon lavoro", "ID": operatore[0], "Password": operatore[1]}
+                return json.dumps(jsonResp), 200
             else:
-                return "Credenziali non valide", 401
-            
+                jsonResp = {"Esito": "001", "Msg": "Operatore non trovato o password errata"}
+                return json.dumps(jsonResp), 200
         except Exception as e:
-            print("Errore: ", e)
-            return "Errore interno", 500
+            return str(e), 500
+        finally:
+            close(cur)
     else:
-        return "Content-Type non supportato", 400
+        return 'Content-Type not supported!', 401
 
-
+# Aggiungi cittadino
 @api.route('/add_cittadino', methods=['POST'])
-def GestisciAddCittadino():
+def controlla_cittadino(conn, codF):
+    """Controlla se il cittadino è già presente nel database."""
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT * FROM cittadini WHERE codice_fiscale = %s;", (codF,))
+        row = cur.fetchone()
+        cur.close()
+        return row is not None  # Restituisce True se il cittadino esiste, altrimenti False
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        return None
+
+def GestisciAddCittadino(conn):
+    global nome
+    global cognome
+    global codf
+    
     content_type = request.headers.get('Content-Type')
     print("Ricevuta chiamata " + content_type)
-    if content_type == 'application/x-www-form-urlencoded':
-        try:
-            sCodiceFiscale = request.form["codice_fiscale"]
-            sNome = request.form["nome"]
-            sCognome = request.form["cognome"]
-            
-            cur = db.connect()
-            if cur is None:
-                print("Errore connessione al DB")
-                sys.exit()
-            
-            sQuery = "INSERT INTO Cittadini (codice_fiscale, nome, cognome) VALUES (%s, %s, %s);"
-            result = db.write_in_db(cur, sQuery, (sCodiceFiscale, sNome, sCognome))
-            
-            if result == 0:
-                return "Cittadino aggiunto con successo", 200
-            elif result == -2:
-                return "Cittadino già presente", 409
-            else:
-                return "Errore durante l'inserimento", 500
-            
-        except Exception as e:
-            print("Errore: ", e)
-            return "Errore interno", 500
+    if content_type == 'application/json':
+        jsonReq = request.json
+        nome = jsonReq["nome"]
+        cognome= jsonReq["cognome"]
+        codF = jsonReq["codice_fiscale"]
     else:
-        return "Content-Type non supportato", 400
+        print("error")
+    # Controlla se il cittadino è già presente
+    if controlla_cittadino(conn, codF):
+        print("Cittadino già presente nel database.")
+    else:
+        # Inserisce il cittadino nel database
+        try:
+            cur = conn.cursor()
+            sql_insert = "INSERT INTO cittadini (nome, cognome, codice_fiscale) VALUES (%s, %s, %s);"
+            cur.execute(sql_insert, (nome, cognome, codF))
+            conn.commit()
+            print("Cittadino aggiunto con successo.")
+            cur.close()
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            conn.rollback()
 
+
+# Cerca cittadino
 @api.route('/cerca_cittadino', methods=['GET'])
 def CercaCittadino():
     content_type = request.headers.get('Content-Type')
-    print("Ricevuta chiamata " + content_type)
-    if content_type == 'application/x-www-form-urlencoded':
+    if content_type == 'application/json':
         try:
-            sCodiceFiscale = request.form["codice_fiscale"]
-            
-            cur = db.connect()
-            if cur is None:
-                print("Errore connessione al DB")
-                sys.exit()
+            jsonReq = request.json
+            sCodiceFiscale = jsonReq["codice fiscale"]
+            sId = jsonReq["ID"]
+            sPass = jsonReq["Password"]
 
-            sQuery = "SELECT * FROM Cittadini WHERE codice_fiscale = %s;"
-            cur.execute(sQuery, (sCodiceFiscale,))
-            result = cur.fetchone()
-            
-            if result:
-                return f"Cittadino trovato: {result}", 200
+            cur = connect()
+            # Verifica che l'operatore esista
+            query = f"SELECT id FROM operatori WHERE id = '{sId}' AND password = '{sPass}'"
+            cur.execute(query)
+            operatore = cur.fetchone()
+
+            if operatore:
+                # Cerca il cittadino
+                query = f"SELECT * FROM anagrafe WHERE codice_fiscale = '{sCodiceFiscale}'"
+                cur.execute(query)
+                cittadino = cur.fetchone()
+
+                if cittadino:
+                    jsonResp = {"Esito": "000", "Msg": "Cittadino trovato", "Cittadino": cittadino}
+                    return json.dumps(jsonResp), 200
+                else:
+                    jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
+                    return json.dumps(jsonResp), 200
             else:
-                return "Cittadino non trovato", 404
-            
+                jsonResp = {"Esito": "001", "Msg": "Operatore non trovato"}
+                return json.dumps(jsonResp), 200
         except Exception as e:
-            print("Errore: ", e)
-            return "Errore interno", 500
+            return str(e), 500
+        finally:
+            close(cur)
     else:
-        return "Content-Type non supportato", 400
+        return 'Content-Type not supported!', 401
 
+# Modifica cittadino
 @api.route('/modifica', methods=['PUT'])
 def ModificaCittadino():
     content_type = request.headers.get('Content-Type')
-    print("Ricevuta chiamata " + content_type)
-    if content_type == 'application/x-www-form-urlencoded':
+    if content_type == 'application/json':
         try:
-            sCodiceFiscale = request.form["codice_fiscale"]
-            sNome = request.form["nome"]
-            sCognome = request.form["cognome"]
+            jsonReq = request.json
+            sCodiceFiscale = jsonReq["codice fiscale"]
+            cur = connect()
 
-            cur = db.connect()
-            if cur is None:
-                print("Errore connessione al DB")
-                sys.exit()
+            # Verifica se il cittadino esiste
+            query = f"SELECT * FROM anagrafe WHERE codice_fiscale = '{sCodiceFiscale}'"
+            cur.execute(query)
+            cittadino = cur.fetchone()
 
-            sQuery = "UPDATE Cittadini SET nome = %s, cognome = %s WHERE codice_fiscale = %s;"
-            result = db.write_in_db(cur, sQuery, (sNome, sCognome, sCodiceFiscale))
+            if cittadino:
+                query = f"UPDATE anagrafe SET nome = '{jsonReq['nome']}', cognome = '{jsonReq['cognome']}' WHERE codice_fiscale = '{sCodiceFiscale}'"
+                cur.execute(query)
+                conn.commit()
 
-            if result == 0:
-                return "Cittadino modificato con successo", 200
-            elif result == -1:
-                return "Cittadino non trovato", 404
+                jsonResp = {"Esito": "000", "Msg": "Cittadino modificato con successo"}
+                return json.dumps(jsonResp), 200
             else:
-                return "Errore durante la modifica", 500
-
+                jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
+                return json.dumps(jsonResp), 200
         except Exception as e:
-            print("Errore: ", e)
-            return "Errore interno", 500
+            return str(e), 500
+        finally:
+            close(cur)
     else:
-        return "Content-Type non supportato", 400
+        return 'Content-Type not supported!', 401
 
+# Elimina cittadino
 @api.route('/elimina', methods=['DELETE'])
-def EliminaCittadino():
+def eliminaCittadino():
     content_type = request.headers.get('Content-Type')
-    print("Ricevuta chiamata " + content_type)
-    if content_type == 'application/x-www-form-urlencoded':
+    if content_type == 'application/json':
         try:
-            sCodiceFiscale = request.form["codice_fiscale"]
+            jsonReq = request.json
+            sCodiceFiscale = jsonReq["codice fiscale"]
+            cur = connect()
 
-            cur = db.connect()
-            if cur is None:
-                print("Errore connessione al DB")
-                sys.exit()
+            # Verifica se il cittadino esiste
+            query = f"SELECT * FROM anagrafe WHERE codice_fiscale = '{sCodiceFiscale}'"
+            cur.execute(query)
+            cittadino = cur.fetchone()
 
-            sQuery = "DELETE FROM Cittadini WHERE codice_fiscale = %s;"
-            result = db.write_in_db(cur, sQuery, (sCodiceFiscale,))
+            if cittadino:
+                query = f"DELETE FROM anagrafe WHERE codice_fiscale = '{sCodiceFiscale}'"
+                cur.execute(query)
+                conn.commit()
 
-            if result == 0:
-                return "Cittadino eliminato con successo", 200
-            elif result == -1:
-                return "Cittadino non trovato", 404
+                jsonResp = {"Esito": "000", "Msg": "Cittadino eliminato con successo"}
+                return json.dumps(jsonResp), 200
             else:
-                return "Errore durante l'eliminazione", 500
-
+                jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
+                return json.dumps(jsonResp), 200
         except Exception as e:
-            print("Errore: ", e)
-            return "Errore interno", 500
+            return str(e), 500
+        finally:
+            close(cur)
     else:
-        return "Content-Type non supportato", 400
+        return 'Content-Type not supported!', 401
 
-if __name__ == "__main__":
-    api.run(host='0.0.0.0', port=8080, debug=True)
+# Avvia l'API
+api.run(host="127.0.0.1", port=8080, ssl_context='adhoc')
