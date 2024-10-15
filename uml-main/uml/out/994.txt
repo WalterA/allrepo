@@ -7,7 +7,8 @@
 
 suggerimenti (
     S:Spettacolo,
-    Ur:Utente_registrato) : Evento
+    Ur:Utente_registrato
+) : Evento
 
     pre:
         Ur deve aver almeno una Prenotazione effettuata
