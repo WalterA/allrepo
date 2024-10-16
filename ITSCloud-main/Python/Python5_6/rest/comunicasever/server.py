@@ -1,222 +1,183 @@
-from flask import Flask, json, request
+from flask import Flask, jsonify, request
 from configparser import ConfigParser
 import psycopg2
+import sys
+import os
+import os.path
+import time
 
-# Funzione per leggere la configurazione del database
+api = Flask(__name__)
+
 def config(filename='database.ini', section='postgresql'):
+    # create a parser
     parser = ConfigParser()
+    # read config file
     parser.read(filename)
 
+    # get section, default to postgresql
     db = {}
     if parser.has_section(section):
         params = parser.items(section)
         for param in params:
             db[param[0]] = param[1]
     else:
-        raise Exception(f'Section {section} not found in the {filename} file')
+        raise Exception('Section {0} not found in the {1} file'.format(section, filename))
 
     return db
 
-# Connessione al database
 conn = None
 
+
 def connect():
-    print('Connecting to the PostgreSQL database...')
+    """ Connect to the PostgreSQL database server """
+    print('Connecting to the PostgreSQL database 0...')
     global conn
+    conn = None
     try:
+        # read connection parameters
         params = config()
+
+        # connect to the PostgreSQL server
+        print('Connecting to the PostgreSQL database...')
         conn = psycopg2.connect(**params)
+
+        # create a cursor
         cur = conn.cursor()
         return cur
+
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         return None
 
-# Funzione per chiudere la connessione
+def write_in_db(cur,sql_insert):
+    global conn
+    try:
+        cur.execute(sql_insert)
+        # commit the changes to the database
+        conn.commit()
+        return 0
+    except (Exception, psycopg2.DatabaseError) as error:
+    #except Exception as error:
+        #print("Inizio:")
+        #print(error)
+        sError = str(error)
+        #print("Fine:")
+        if sError.startswith("duplicate key value "):
+            print("Duplicate key, vado avanti")
+            conn.rollback()
+            return -2
+        cur = None
+        conn = None
+        print(sError)
+        return -1
+
+#La funzione torna -1 se è andata male e numero di righe se va bene
+def read_in_db(cur,sql_select):
+    try:
+        cur.execute(sql_select)
+        print("The number of parts: ", cur.rowcount)
+        return cur.rowcount
+        #row = cur.fetchone()
+
+        #while row is not None:
+        #    print(row)
+        #    row = cur.fetchone()
+    except (Exception, psycopg2.DatabaseError) as error:
+
+        cur = None
+        conn = None
+        return -1
+
+def read_next_row(cur):
+    try:
+        row = cur.fetchone()
+        return [0,row]
+    except:
+        cur = None
+        conn = None
+        return [1,None]
+
 def close(cur):
     global conn
-    if cur:
-        cur.close()
-    if conn:
-        conn.close()
-
-api = Flask(__name__)
-
-# Autenticazione dell'operatore
-@api.route('/operatore', methods=['POST'])
-def verop():
-    content_type = request.headers.get('Content-Type')
-    if content_type == 'application/json':
-        try:
-            jsonReq = request.json
-            sId = jsonReq["ID"]
-            sPass = jsonReq["Password"]
-            
-            cur = connect()
-            query = f"SELECT id, password FROM operatori WHERE id = '{sId}'"
-            cur.execute(query)
-            operatore = cur.fetchone()
-
-            if operatore and sPass == operatore[1]:
-                jsonResp = {"Esito": "000", "Msg": "Buon lavoro", "ID": operatore[0], "Password": operatore[1]}
-                return json.dumps(jsonResp), 200
-            else:
-                jsonResp = {"Esito": "001", "Msg": "Operatore non trovato o password errata"}
-                return json.dumps(jsonResp), 200
-        except Exception as e:
-            return str(e), 500
-        finally:
-            close(cur)
-    else:
-        return 'Content-Type not supported!', 401
-
-# Aggiungi cittadino
-@api.route('/add_cittadino', methods=['POST'])
-def controlla_cittadino(conn, codF):
-    """Controlla se il cittadino è già presente nel database."""
     try:
-        cur = conn.cursor()
-        cur.execute("SELECT * FROM cittadini WHERE codice_fiscale = %s;", (codF,))
-        row = cur.fetchone()
-        cur.close()
-        return row is not None  # Restituisce True se il cittadino esiste, altrimenti False
+        if cur is not None:
+            cur.close()
+        if conn is not None:
+            conn.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-        return None
-
-def GestisciAddCittadino(conn):
-    global nome
-    global cognome
-    global codf
-    
+        cur = None
+        conn = None
+        
+@api.route('/login', method['POST'])
+def login():
     content_type = request.headers.get('Content-Type')
-    print("Ricevuta chiamata " + content_type)
     if content_type == 'application/json':
         jsonReq = request.json
-        nome = jsonReq["nome"]
-        cognome= jsonReq["cognome"]
-        codF = jsonReq["codice_fiscale"]
-    else:
-        print("error")
-    # Controlla se il cittadino è già presente
-    if controlla_cittadino(conn, codF):
-        print("Cittadino già presente nel database.")
-    else:
-        # Inserisce il cittadino nel database
-        try:
-            cur = conn.cursor()
-            sql_insert = "INSERT INTO cittadini (nome, cognome, codice_fiscale) VALUES (%s, %s, %s);"
-            cur.execute(sql_insert, (nome, cognome, codF))
-            conn.commit()
-            print("Cittadino aggiunto con successo.")
-            cur.close()
-        except (Exception, psycopg2.DatabaseError) as error:
-            print(error)
-            conn.rollback()
-
-
-# Cerca cittadino
-@api.route('/cerca_cittadino', methods=['GET'])
-def CercaCittadino():
+        db={}
+        cur = db.connect()
+        if cur is None:
+            print("Errore connessione al DB")
+            sys.exit()
+        sQuery = "select * from cittadini limit 5;"
+        iNumRows = db.read_in_db(cur,sQuery)
+        for ii in range(0,iNumRows):
+            myrow = db.read_next_row(cur)
+            if 'RSS43A85M15H501Z' in myrow[1]:
+                print(True)
+        
+        
+@api.route('/add_cittadino', methods=['POST'])
+def GestisciAddCittadino():
     content_type = request.headers.get('Content-Type')
     if content_type == 'application/json':
-        try:
-            jsonReq = request.json
-            sCodiceFiscale = jsonReq["codice fiscale"]
-            sId = jsonReq["ID"]
-            sPass = jsonReq["Password"]
-
-            cur = connect()
-            # Verifica che l'operatore esista
-            query = f"SELECT id FROM operatori WHERE id = '{sId}' AND password = '{sPass}'"
-            cur.execute(query)
-            operatore = cur.fetchone()
-
-            if operatore:
-                # Cerca il cittadino
-                query = f"SELECT * FROM anagrafe WHERE codice_fiscale = '{sCodiceFiscale}'"
-                cur.execute(query)
-                cittadino = cur.fetchone()
-
-                if cittadino:
-                    jsonResp = {"Esito": "000", "Msg": "Cittadino trovato", "Cittadino": cittadino}
-                    return json.dumps(jsonResp), 200
-                else:
-                    jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
-                    return json.dumps(jsonResp), 200
-            else:
-                jsonResp = {"Esito": "001", "Msg": "Operatore non trovato"}
-                return json.dumps(jsonResp), 200
-        except Exception as e:
-            return str(e), 500
-        finally:
-            close(cur)
+        jsonReq = request.json
+        codice_fiscale = jsonReq.get('codFiscale')
+        if codice_fiscale in cittadini:
+            return jsonify({"Esito": "200", "Msg": "Cittadino già esistente"}), 200
+        else:
+            cittadini[codice_fiscale] = jsonReq
+            JsonSerialize(cittadini, file_path) 
+            return jsonify({"Esito": "200", "Msg": "Cittadino aggiunto con successo"}), 200
     else:
-        return 'Content-Type not supported!', 401
+        return 'Content-Type non supportato!'
 
-# Modifica cittadino
-@api.route('/modifica', methods=['PUT'])
-def ModificaCittadino():
+@api.route('/read_cittadino/<codice_fiscale>', methods=['GET'])
+def read_cittadino(codice_fiscale):
+    cittadino = cittadini.get(codice_fiscale)
+    if cittadino:
+        return jsonify({"Esito": "200", "Msg": "Cittadino trovato", "Dati": cittadino}), 200
+    else:
+        return jsonify({"Esito": "404", "Msg": "Cittadino non trovato"}), 404
+
+@api.route('/update_cittadino', methods=['POST'])
+def update_cittadino():
     content_type = request.headers.get('Content-Type')
     if content_type == 'application/json':
-        try:
-            jsonReq = request.json
-            sCodiceFiscale = jsonReq["codice fiscale"]
-            cur = connect()
-
-            # Verifica se il cittadino esiste
-            query = f"SELECT * FROM anagrafe WHERE codice_fiscale = '{sCodiceFiscale}'"
-            cur.execute(query)
-            cittadino = cur.fetchone()
-
-            if cittadino:
-                query = f"UPDATE anagrafe SET nome = '{jsonReq['nome']}', cognome = '{jsonReq['cognome']}' WHERE codice_fiscale = '{sCodiceFiscale}'"
-                cur.execute(query)
-                conn.commit()
-
-                jsonResp = {"Esito": "000", "Msg": "Cittadino modificato con successo"}
-                return json.dumps(jsonResp), 200
-            else:
-                jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
-                return json.dumps(jsonResp), 200
-        except Exception as e:
-            return str(e), 500
-        finally:
-            close(cur)
+        jsonReq = request.json
+        codice_fiscale = jsonReq.get('codFiscale')
+        if codice_fiscale in cittadini:
+            cittadini[codice_fiscale] = jsonReq
+            JsonSerialize(cittadini, file_path)  
+            return jsonify({"Esito": "200", "Msg": "Cittadino aggiornato con successo"}), 200
+        else:
+            return jsonify({"Esito": "404", "Msg": "Cittadino non trovato"}), 404
     else:
-        return 'Content-Type not supported!', 401
+        return 'Content-Type non supportato!'
 
-# Elimina cittadino
-@api.route('/elimina', methods=['DELETE'])
-def eliminaCittadino():
+@api.route('/elimina_cittadino', methods=['POST'])
+def elimina_cittadino():
     content_type = request.headers.get('Content-Type')
     if content_type == 'application/json':
-        try:
-            jsonReq = request.json
-            sCodiceFiscale = jsonReq["codice fiscale"]
-            cur = connect()
-
-            # Verifica se il cittadino esiste
-            query = f"SELECT * FROM anagrafe WHERE codice_fiscale = '{sCodiceFiscale}'"
-            cur.execute(query)
-            cittadino = cur.fetchone()
-
-            if cittadino:
-                query = f"DELETE FROM anagrafe WHERE codice_fiscale = '{sCodiceFiscale}'"
-                cur.execute(query)
-                conn.commit()
-
-                jsonResp = {"Esito": "000", "Msg": "Cittadino eliminato con successo"}
-                return json.dumps(jsonResp), 200
-            else:
-                jsonResp = {"Esito": "001", "Msg": "Cittadino non trovato"}
-                return json.dumps(jsonResp), 200
-        except Exception as e:
-            return str(e), 500
-        finally:
-            close(cur)
+        cod = request.json.get('codFiscale')
+        if cod in cittadini:
+            del cittadini[cod]
+            JsonSerialize(cittadini, file_path)  
+            return jsonify({"Esito": "200", "Msg": "Cittadino rimosso con successo"}), 200
+        else:
+            return jsonify({"Esito": "404", "Msg": "Cittadino non trovato"}), 404
     else:
-        return 'Content-Type not supported!', 401
+        return 'Content-Type non supportato!'
 
-# Avvia l'API
-api.run(host="127.0.0.1", port=8080, ssl_context='adhoc')
+api.run(host="127.0.0.1", port=8080)
+
