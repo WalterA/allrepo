@@ -1,6 +1,7 @@
 
 public class Cibo {
-	private String nome , colore , tipologia;
+	private String nome , tipologia;
+	int calorie;
 
 	public String getNome() {
 		return nome;
@@ -10,12 +11,12 @@ public class Cibo {
 		this.nome = nome;
 	}
 
-	public String getColore() {
-		return colore;
+	public int getCalorie() {
+		return calorie;
 	}
 
-	public void setColore(String colore) {
-		this.colore = colore;
+	public void setCalorie(int calorie) {
+		this.calorie = calorie;
 	}
 
 	public String getTipologia() {
@@ -29,7 +30,7 @@ public class Cibo {
 	public Cibo(String nome, String colore, String tipologia) {
 		super();
 		this.nome = nome;
-		this.colore = colore;
+		this.calorie = calorie;
 		this.tipologia = tipologia;
 	}
 
@@ -39,6 +40,6 @@ public class Cibo {
 
 	@Override
 	public String toString() {
-		return "Cibo [nome=" + nome + ", colore=" + colore + ", tipologia=" + tipologia + "]";
+		return "Cibo [nome=" + nome + ", calorie=" + calorie + ", tipologia=" + tipologia + "]";
 	}
 }
