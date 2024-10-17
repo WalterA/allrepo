@@ -8,6 +8,22 @@ import os.path
 import time
 
 api = Flask(__name__)
+import bcrypt
+
+# Codifica la password come byte string (se non l'hai già fatto)
+password = b"your_password"
+
+# Genera un hash della password
+hashed_password = bcrypt.hashpw(password, bcrypt.gensalt())
+
+print(f"Hashed password: {hashed_password}")
+
+# Verifica la password
+if bcrypt.checkpw(password, hashed_password):
+    print("Password matches!")
+else:
+    print("Password does not match!")
+
 
 def config(filename='database.ini', section='postgresql'):
     # create a parser
