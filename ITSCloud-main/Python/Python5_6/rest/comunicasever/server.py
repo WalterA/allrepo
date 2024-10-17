@@ -1,3 +1,4 @@
+from crypt import methods
 from flask import Flask, jsonify, request
 from configparser import ConfigParser
 import psycopg2
@@ -109,7 +110,7 @@ def close(cur):
         cur = None
         conn = None
         
-@api.route('/login', method['POST'])
+@api.route('/login', methods['POST'])
 def login():
     content_type = request.headers.get('Content-Type')
     if content_type == 'application/json':

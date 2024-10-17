@@ -29,7 +29,7 @@ if codop:
         api_url = base_url + "/login"
         id_utente = input("Inserisci ID operatore: ")
         pwd_utente = input("Inserisci Password dell'operatore: ")
-        jsonDataRequest= {id_utente,pwd_utente}
+        jsonDataRequest= {'id_utente':id_utente,'pwd_utente':pwd_utente}
         jsonDataRequest = requests.post(api_url, json=jsonDataRequest)
        
 while access:

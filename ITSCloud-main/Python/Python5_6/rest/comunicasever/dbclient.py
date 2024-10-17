@@ -55,10 +55,10 @@ def read_in_db(cur, sql_select):
 def read_next_row(cur):
     try:
         row = cur.fetchone()
-        return [0, row]
+        return True, row
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
-        return [1, None]
+        return False, None
 
 def close(cur):
     global conn
