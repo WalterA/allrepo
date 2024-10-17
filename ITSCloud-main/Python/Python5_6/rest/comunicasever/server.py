@@ -115,70 +115,84 @@ def login():
     content_type = request.headers.get('Content-Type')
     if content_type == 'application/json':
         jsonReq = request.json
+        id = jsonReq.get('id_utente')
+        pwd = jsonReq.get('pwd_utente')
+        
         cur = connect()
-        sql_insert = "select  from operatori "
         if cur is None:
-            print("Errore connessione al DB")
-            sys.exit()
-        sQuery = "select * from cittadini limit 5;"
-        iNumRows = db.read_in_db(cur,sQuery)
-        for ii in range(0,iNumRows):
-            myrow = db.read_next_row(cur)
-            if 'RSS43A85M15H501Z' in myrow[1]:
-                print(True)
+            return jsonify({"Esito": "500", "Msg": "Errore connessione al DB"}), 500
+            
+        sql_select = "SELECT id, password FROM operatori"
+        iNumRows = read_in_db(cur, sql_select)
         
+        if iNumRows == 0:
+            return jsonify({"Esito": "404", "Msg": "Utente non trovato"}), 404
         
-@api.route('/add_cittadino', methods=['POST'])
-def GestisciAddCittadino():
-    content_type = request.headers.get('Content-Type')
-    if content_type == 'application/json':
-        jsonReq = request.json
-        codice_fiscale = jsonReq.get('codFiscale')
-        if codice_fiscale in cittadini:
-            return jsonify({"Esito": "200", "Msg": "Cittadino già esistente"}), 200
-        else:
-            cittadini[codice_fiscale] = jsonReq
-            JsonSerialize(cittadini, file_path) 
-            return jsonify({"Esito": "200", "Msg": "Cittadino aggiunto con successo"}), 200
-    else:
-        return 'Content-Type non supportato!'
+        for ii in range(0, iNumRows):
+            ok, myrow = read_next_row(cur)
+            if ok:
+                if myrow[1] == pwd:
+                    if myrow[0] == id:
+                        return jsonify({"Esito": "200", "Msg": "Dati corretti"}), 200
+                    else:
+                        return jsonify({"Esito": "403", "Msg": "ID errato"}), 403
+                else:
+                    return jsonify({"Esito": "403", "Msg": "Password errata"}), 403
+            else:
+                return jsonify({"Esito": "500", "Msg": "Errore db"}), 500
 
-@api.route('/read_cittadino/<codice_fiscale>', methods=['GET'])
-def read_cittadino(codice_fiscale):
-    cittadino = cittadini.get(codice_fiscale)
-    if cittadino:
-        return jsonify({"Esito": "200", "Msg": "Cittadino trovato", "Dati": cittadino}), 200
-    else:
-        return jsonify({"Esito": "404", "Msg": "Cittadino non trovato"}), 404
+        
+# @api.route('/add_cittadino', methods=['POST'])
+# def GestisciAddCittadino():
+#     content_type = request.headers.get('Content-Type')
+#     if content_type == 'application/json':
+#         jsonReq = request.json
+#         codice_fiscale = jsonReq.get('codFiscale')
+#         if codice_fiscale in cittadini:
+#             return jsonify({"Esito": "200", "Msg": "Cittadino già esistente"}), 200
+#         else:
+#             cittadini[codice_fiscale] = jsonReq
+#             JsonSerialize(cittadini, file_path) 
+#             return jsonify({"Esito": "200", "Msg": "Cittadino aggiunto con successo"}), 200
+#     else:
+#         return 'Content-Type non supportato!'
 
-@api.route('/update_cittadino', methods=['POST'])
-def update_cittadino():
-    content_type = request.headers.get('Content-Type')
-    if content_type == 'application/json':
-        jsonReq = request.json
-        codice_fiscale = jsonReq.get('codFiscale')
-        if codice_fiscale in cittadini:
-            cittadini[codice_fiscale] = jsonReq
-            JsonSerialize(cittadini, file_path)  
-            return jsonify({"Esito": "200", "Msg": "Cittadino aggiornato con successo"}), 200
-        else:
-            return jsonify({"Esito": "404", "Msg": "Cittadino non trovato"}), 404
-    else:
-        return 'Content-Type non supportato!'
+# @api.route('/read_cittadino/<codice_fiscale>', methods=['GET'])
+# def read_cittadino(codice_fiscale):
+#     cittadino = cittadini.get(codice_fiscale)
+#     if cittadino:
+#         return jsonify({"Esito": "200", "Msg": "Cittadino trovato", "Dati": cittadino}), 200
+#     else:
+#         return jsonify({"Esito": "404", "Msg": "Cittadino non trovato"}), 404
 
-@api.route('/elimina_cittadino', methods=['POST'])
-def elimina_cittadino():
-    content_type = request.headers.get('Content-Type')
-    if content_type == 'application/json':
-        cod = request.json.get('codFiscale')
-        if cod in cittadini:
-            del cittadini[cod]
-            JsonSerialize(cittadini, file_path)  
-            return jsonify({"Esito": "200", "Msg": "Cittadino rimosso con successo"}), 200
-        else:
-            return jsonify({"Esito": "404", "Msg": "Cittadino non trovato"}), 404
-    else:
-        return 'Content-Type non supportato!'
+# @api.route('/update_cittadino', methods=['POST'])
+# def update_cittadino():
+#     content_type = request.headers.get('Content-Type')
+#     if content_type == 'application/json':
+#         jsonReq = request.json
+#         codice_fiscale = jsonReq.get('codFiscale')
+#         if codice_fiscale in cittadini:
+#             cittadini[codice_fiscale] = jsonReq
+#             JsonSerialize(cittadini, file_path)  
+#             return jsonify({"Esito": "200", "Msg": "Cittadino aggiornato con successo"}), 200
+#         else:
+#             return jsonify({"Esito": "404", "Msg": "Cittadino non trovato"}), 404
+#     else:
+#         return 'Content-Type non supportato!'
+
+# @api.route('/elimina_cittadino', methods=['POST'])
+# def elimina_cittadino():
+#     content_type = request.headers.get('Content-Type')
+#     if content_type == 'application/json':
+#         cod = request.json.get('codFiscale')
+#         if cod in cittadini:
+#             del cittadini[cod]
+#             JsonSerialize(cittadini, file_path)  
+#             return jsonify({"Esito": "200", "Msg": "Cittadino rimosso con successo"}), 200
+#         else:
+#             return jsonify({"Esito": "404", "Msg": "Cittadino non trovato"}), 404
+#     else:
+#         return 'Content-Type non supportato!'
 
 api.run(host="127.0.0.1", port=8080)
 
