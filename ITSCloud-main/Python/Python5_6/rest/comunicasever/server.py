@@ -92,11 +92,11 @@ def read_in_db(cur,sql_select):
 def read_next_row(cur):
     try:
         row = cur.fetchone()
-        return [0,row]
+        return True,row
     except:
         cur = None
         conn = None
-        return [1,None]
+        return False,None
 
 def close(cur):
     global conn
@@ -110,13 +110,13 @@ def close(cur):
         cur = None
         conn = None
         
-@api.route('/login', methods['POST'])
+@api.route('/login', methods=['POST'])
 def login():
     content_type = request.headers.get('Content-Type')
     if content_type == 'application/json':
         jsonReq = request.json
-        db={}
-        cur = db.connect()
+        cur = connect()
+        sql_insert = "select  from operatori "
         if cur is None:
             print("Errore connessione al DB")
             sys.exit()
