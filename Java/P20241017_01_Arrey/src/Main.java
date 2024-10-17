@@ -53,5 +53,6 @@ public class Main {
         System.out.println("Media: " + media);
         System.out.println("Numero di volte che il successivo è maggiore del precedente: " + maggiore);
         System.out.println("Lunghezza della più lunga sequenza crescente: " + maxSeqLength);
+        System.out.println(num[currentSeqLength]);
     }
 }
