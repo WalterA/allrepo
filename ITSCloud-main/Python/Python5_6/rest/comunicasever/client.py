@@ -4,73 +4,100 @@ import sys
 id_utente = ""
 pwd_utente = ""
 base_url = "https://127.0.0.1:8080"
-
+operatore= None
 def GetDatiCittadino():
     nome = input("Qual è il nome? ")
     cognome = input("Qual è il cognome? ")
     codF = input("Qual è il codice fiscale? ")
-    datiCittadino = {"nome": nome, "cognome": cognome, "codice_fiscale": codF}
-    return datiCittadino
+    return nome , cognome , codF
 
 def GetCodicefiscale():
-    cod = input('Inserisci codice fiscale: ')
-    return {"codFiscale": cod}
+    cod = input('Inserisci codice fiscale: ').upper()
+    return cod
 
 access = False
 print("Benvenuto operatore\ninserisci i dati per iniziare la tua attività.")
-codop = input("Inserisci l'ID operatore: ")
-
-if codop.isdigit():
-    while not access:
-        api_url = base_url + "/login"
-        id_utente = input("Inserisci ID operatore: ")
-        pwd_utente = input("Inserisci Password dell'operatore: ")
-        jsonDataRequest = {'id_utente': id_utente, 'pwd_utente': pwd_utente}
-        
-        response = requests.post(api_url, json=jsonDataRequest, verify=False)
-        
-        if response.status_code == 200:
-            data1 = response.json()
-            if data1.get("Esito") == "200":
-                access = True
-                dResponse = response.json()
-                print(dResponse["Msg"])
+conta=3
+while access == False:
+    codop = input("Inserisci l'ID operatore: ")
+    if conta == 1:
+        print("Raggiunto il massimo di errori, arrivederci")
+        access = False
+        sys.exit()
+    if codop.isdigit():
+        while not access:
+            api_url = base_url + "/login"
+            id_utente = input("Inserisci ID operatore: ")
+            pwd_utente = input("Inserisci Password dell'operatore: ")
+            jsonDataRequest = {'id_utente': id_utente, 'pwd_utente': pwd_utente}
+            response = requests.post(api_url, json=jsonDataRequest, verify=False)
+            if response.status_code == 200:
+                data1 = response.json()
+                if data1.get("Esito") == "200":
+                    access = True
+                    dResponse = response.json()
+                    operatore = dResponse["operatore"]
+                    print(dResponse["Msg"])
+                else:
+                    print("Dati errati, riprova.")
             else:
-                print("Dati errati, riprova.")
+                print(f"Errore nella richiesta: {response.status_code}")
+    else:
+        conta-=1
+        print(f"ID operatore non valido. Inserisci solo numeri. Tentativi rimasti {conta}")
+
+while access:
+    print("\nOperazioni disponibili:")
+    print("1. Inserisci cittadino")
+    print("2. Richiedi cittadino")
+    print("3. Modifica cittadino")
+    print("4. Elimina cittadino")
+    print("5. Esci")
+    sOper = input("Cosa vuoi fare?")
+    if int(operatore["id"]) > 1:
+        if sOper == "2":
+            print("Richiesta dati cittadino")
+            api_url = base_url + "/read_cittadino"
+            jsonDataRequest = {"codFiscale" : GetCodicefiscale(),"operatore":operatore}
+            response = requests.post(api_url, json=jsonDataRequest, verify=False)
+            if response.status_code == 200:
+                response=response.json()
+                cittadino = response["cittadino"]
+                id_operatore = response["operatore"]["id"] 
+                print(f"Cittadino: {cittadino}, ID Operatore: {id_operatore}")
+            else:
+                print(f"Errore nella richiesta: {response.status_code}, {response.text}")
         else:
-            print(f"Errore nella richiesta: {response.status_code}")
-else:
-    print("ID operatore non valido. Inserisci solo numeri.")
-
-       
-# while access:
-#     sOper = input("Cosa vuoi fare?\nOperazioni disponibili:\n1. Inserisci cittadino (es. atto di nascita)\n2. Richiedi cittadino (es. cert. residenza)\n3. Modifica cittadino (es. cambio residenza)\n4. Elimina cittadino (es. trasferim altro comune)\n5. Termina lavoro")
-#     if sOper == "1":
-#         while access:
-#             operatore = verifica_operatore(conn, id_utente, pwd_utente)
-#             if operatore:
-#                 print("Operatore trovato:", operatore)
-#             else:
-#                  print("Operatore non trovato o dati non validi")
-#                  access=False
-
-#             print("Richiesto nuovo cittadino")
-#             api_url = base_url + "/add_cittadino"
-#             jsonDataRequest = GetDatiCittadino()
-#             try:
-#                 response = requests.post(api_url, json=jsonDataRequest, verify=False)
-#                 data1 = response.json()
-#                 print(response.status_code)
-#                 print(response.headers["Content-Type"])
+            print("Operazione non consentita")
+        if sOper == "5":
+            print("Fine lavoro")
+            access = False
+            sys.exit()
+    else:
+        if sOper == "1":
+            print("Nuovo cittadino")
+            api_url = base_url + "/add_cittadino"
+            jsonDataRequest = GetDatiCittadino()
+            try:
+                response = requests.post(api_url, json=jsonDataRequest, verify=False)
+                data1 = response.json()
+                print(response.status_code)
+                print(response.headers["Content-Type"])
                 
-#                 if data1["Esito"] == "000" and data1["ID"] == id_utente and data1["Password"] == pwd_utente:
-#                     print("Cittadino inserito con successo")
-#                     print(data1)
-#                 else:
-#                     print("Dati errati")      
-#             except:
-#                 print("Problemi di comunicazione con il server, riprova più tardi")
-# """
+                if data1["Esito"] == "000" and data1["ID"] == id_utente and data1["Password"] == pwd_utente:
+                    print("Cittadino inserito con successo")
+                    print(data1)
+                else:
+                    print("Dati errati")      
+            except:
+                print("Problemi di comunicazione con il server, riprova più tardi")
+        else:
+            print("Operazione non consentita")
+        
+    # if operatore["id"] == 1:
+    #         print("Richiesto nuovo cittadino")
+            
+"""
 #         elif sOper == "2":
 #             print("Richiesto codice fiscale cittadino")
 #             api_url = base_url + "/cerca_cittadino"
