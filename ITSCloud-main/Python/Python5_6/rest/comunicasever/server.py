@@ -2,6 +2,7 @@
 from flask import Flask, jsonify, request
 from configparser import ConfigParser
 import psycopg2
+
 import sys
 import os
 import os.path
@@ -16,7 +17,8 @@ conn = psycopg2.connect(
     host="localhost",      # indirizzo del server PostgreSQL (localhost per locale)
     database="postgres",       # nome del database
     user="postgres",         # nome utente del database
-    password="postgres"  # password dell'utente
+    password="postgres",  # password dell'utente
+    options="-c timezone=Europe/Rome"
 )
 
 # Creare un cursore per eseguire le query
@@ -150,7 +152,7 @@ def login():
         result = cur.fetchone()
         operatore={"id":id,"password":pwd}
         if result:
-            query = "INSERT INTO operazioni (data, operatori, op) VALUES (NOW(), %s , %s);"
+            query = "INSERT INTO operazioni (data, operatori, op) VALUES (NOW() AT TIME ZONE 'Europe/Rome', %s , %s);"
             cur.execute(query, (id,"Login"))
             conn.commit()
             print("Operazione inserita con successo.")
