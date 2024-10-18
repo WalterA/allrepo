@@ -125,15 +125,16 @@ def login():
             
         sql_select = "SELECT id, password FROM operatori"
         iNumRows = read_in_db(cur, sql_select)
-        
+        print("num records: " + str(iNumRows))
         if iNumRows == 0:
             return jsonify({"Esito": "404", "Msg": "Utente non trovato"}), 404
         
         for ii in range(0, iNumRows):
             ok, myrow = read_next_row(cur)
+            print(myrow)
             if ok:
                 if myrow[1] == pwd:
-                    if myrow[0] == id:
+                    if myrow[0] == int(id):
                         return jsonify({"Esito": "200", "Msg": "Dati corretti"}), 200
                     else:
                         return jsonify({"Esito": "403", "Msg": "ID errato"}), 403
@@ -195,5 +196,5 @@ def login():
 #     else:
 #         return 'Content-Type non supportato!'
 
-api.run(host="127.0.0.1", port=8080)
+api.run(host="127.0.0.1", port=8080, ssl_context="adhoc")
 

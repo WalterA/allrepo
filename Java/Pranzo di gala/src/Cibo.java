@@ -1,7 +1,7 @@
 
 public class Cibo {
 	private String nome , tipologia;
-	double calorie;
+	private double calorie;
 	public String getNome() {
 		return nome;
 	}

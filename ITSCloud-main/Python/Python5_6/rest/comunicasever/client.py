@@ -1,5 +1,3 @@
-from configparser import ConfigParser
-import psycopg2
 import requests
 import sys
 
@@ -35,7 +33,8 @@ if codop.isdigit():
             data1 = response.json()
             if data1.get("Esito") == "200":
                 access = True
-                print(response.headers["Content-Type"])
+                dResponse = response.json()
+                print(dResponse["Msg"])
             else:
                 print("Dati errati, riprova.")
         else:
