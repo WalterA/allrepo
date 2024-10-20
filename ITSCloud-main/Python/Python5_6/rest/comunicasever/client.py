@@ -16,10 +16,12 @@ def reset_timer():
     timer.cancel()  # Cancella il timer attuale
     timer = threading.Timer(10, timeout)  # Imposta un nuovo timer
     timer.start()  # Avvia il timer
+
 id_utente = ""
 pwd_utente = ""
 base_url = "https://127.0.0.1:8080"
 operatore= None
+
 def GetDatiCittadino():
     nome = input("Qual è il nome? ").capitalize()
     cognome = input("Qual è il cognome? ").capitalize()
@@ -69,8 +71,11 @@ while access:
     print("3. Modifica cittadino")
     print("4. Elimina cittadino")
     print("5. Esci")
+    
     reset_timer() 
+    
     sOper = input("Cosa vuoi fare?")
+    
     if int(operatore["id"]) > 1:
         if sOper == "2":
             print("Richiesta dati cittadino")
@@ -86,6 +91,7 @@ while access:
                 print(f"Errore nella richiesta: {response.status_code}, {response.text}")
         else:
             print("Operazione non consentita")
+            
         if sOper == "5":
             print("Fine lavoro")
             access = False
@@ -103,6 +109,7 @@ while access:
                 print(f"{response["Msg"]}, ID Operatore: {id_operatore}")
             else:
                 print(f"Errore nella richiesta: {response.status_code}, {response.text}")
+                
         elif sOper == "2":
             print("Richiesta dati cittadino")
             api_url = base_url + "/read_cittadino"
@@ -115,6 +122,7 @@ while access:
                 print(f"Cittadino: {cittadino}, ID Operatore: {id_operatore}")
             else:
                 print(f"Errore nella richiesta: {response.status_code}, {response.text}")
+                
         elif sOper == "3":
             print("Modifica cittadino")
             api_url = base_url + '/update_cittadino'
@@ -143,6 +151,7 @@ while access:
                     print(f"Errore nella richiesta: {response.status_code}, {response.text}")
             except requests.exceptions.RequestException as e:
                 print(f"Problemi di comunicazione con il server: {e}")
+                
         elif sOper == "4":
             print("Elimina cittadino")
             api_url = base_url + "/elimina"

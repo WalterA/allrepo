@@ -10,8 +10,6 @@ import time
 
 api = Flask(__name__)
 
-import psycopg2
-
 # Configurazione della connessione al database
 conn = psycopg2.connect(
     host="localhost",      # indirizzo del server PostgreSQL (localhost per locale)
@@ -34,108 +32,7 @@ conn = psycopg2.connect(
 # Chiudere la connessione e il cursore
 # cur.close()
 # conn.close()
-"""
-def config(filename='database.ini', section='postgresql'):
-    # create a parser
-    parser = ConfigParser()
-    # read config file
-    parser.read(filename)
 
-    # get section, default to postgresql
-    db = {}
-    if parser.has_section(section):
-        params = parser.items(section)
-        for param in params:
-            db[param[0]] = param[1]
-    else:
-        raise Exception('Section {0} not found in the {1} file'.format(section, filename))
-
-    return db
-
-conn = None
-
-
-def connect():
-    Connect to the PostgreSQL database server 
-    print('Connecting to the PostgreSQL database 0...')
-    global conn
-    conn = None
-    try:
-        # read connection parameters
-        params = config()
-
-        # connect to the PostgreSQL server
-        print('Connecting to the PostgreSQL database...')
-        conn = psycopg2.connect(**params)
-
-        # create a cursor
-        cur = conn.cursor()
-        return cur
-
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        return None
-
-def write_in_db(cur,sql_insert):
-    global conn
-    try:
-        cur.execute(sql_insert)
-        # commit the changes to the database
-        conn.commit()
-        return 0
-    except (Exception, psycopg2.DatabaseError) as error:
-    #except Exception as error:
-        #print("Inizio:")
-        #print(error)
-        sError = str(error)
-        #print("Fine:")
-        if sError.startswith("duplicate key value "):
-            print("Duplicate key, vado avanti")
-            conn.rollback()
-            return -2
-        cur = None
-        conn = None
-        print(sError)
-        return -1
-
-#La funzione torna -1 se è andata male e numero di righe se va bene
-def read_in_db(cur,sql_select):
-    try:
-        cur.execute(sql_select)
-        print("The number of parts: ", cur.rowcount)
-        return cur.rowcount
-        #row = cur.fetchone()
-
-        #while row is not None:
-        #    print(row)
-        #    row = cur.fetchone()
-    except (Exception, psycopg2.DatabaseError) as error:
-
-        cur = None
-        conn = None
-        return -1
-
-def read_next_row(cur):
-    try:
-        row = cur.fetchone()
-        return True,row
-    except:
-        cur = None
-        conn = None
-        return False,None
-
-def close(cur):
-    global conn
-    try:
-        if cur is not None:
-            cur.close()
-        if conn is not None:
-            conn.close()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        cur = None
-        conn = None
-"""       
 @api.route('/login', methods=['POST'])
 def login():
     try:
@@ -166,9 +63,7 @@ def login():
         # Chiusura del cursore e della connessione
         if cur is not None:
             cur.close()
-        
 
-        
 @api.route('/add_cittadino', methods=['POST'])
 def GestisciAddCittadino():
     try:
@@ -278,6 +173,7 @@ def update_cittadino():
         # Chiusura del cursore e della connessione
         if cur is not None:
             cur.close()
+
 @api.route('/elimina', methods=['DELETE'])
 def elimina_cittadino():
     cur = None
@@ -318,7 +214,6 @@ def elimina_cittadino():
     finally:
         if cur is not None:
             cur.close()
-
 
 api.run(host="127.0.0.1", port=8080, ssl_context="adhoc")
 
