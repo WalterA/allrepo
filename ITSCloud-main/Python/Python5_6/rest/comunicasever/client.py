@@ -4,7 +4,7 @@ import threading
 
 # Funzione per terminare il programma dopo 10 secondi di inattività
 def timeout():
-    print("Tempo scaduto. Uscita dal programma.")
+    print("Tempo scaduto. Uscita dal pr ogramma.")
     sys.exit()
 
 # Imposta il timer di 10 secondi

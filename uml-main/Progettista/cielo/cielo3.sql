@@ -16,6 +16,7 @@ SELECT v.comp, ROUND(AVG(v.durataminuti),2) AS avg_durataminuti
 FROM volo v
 JOIN par ON par.id = v.codice
 GROUP BY v.comp;
+
 --2 Quali sono le compagnie che operano voli con durata media maggiore della durata media di tutti i voli?
  with m as (
  select avg(durataminuti) as dm
@@ -93,6 +94,7 @@ FROM media_durata_citta c
 JOIN media_totale m ON 
     (c.media_durata > m.media_durata + m.deviazione_std OR 
      c.media_durata < m.media_durata - m.deviazione_std);
+
  --6 Quali sono le nazioni che hanno i l maggior numero di citta ’ dalle quali
  --partono voli diretti in altre nazioni?
 WITH citta_con_voli AS (
