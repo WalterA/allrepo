@@ -8,13 +8,13 @@ def timeout():
     sys.exit()
 
 # Imposta il timer di 10 secondi
-timer = threading.Timer(10, timeout)
+timer = threading.Timer(5000, timeout)
 
 # Funzione per resetare il timer
 def reset_timer():
     global timer
     timer.cancel()  # Cancella il timer attuale
-    timer = threading.Timer(10, timeout)  # Imposta un nuovo timer
+    timer = threading.Timer(5000, timeout)  # Imposta un nuovo timer
     timer.start()  # Avvia il timer
 
 id_utente = ""
@@ -106,7 +106,8 @@ while access:
             if response.status_code == 200:
                 response=response.json()
                 id_operatore = response["operatore"]["id"] 
-                print(f"{response["Msg"]}, ID Operatore: {id_operatore}")
+                msg=response["Msg"]
+                print(f"{msg}, ID Operatore: {id_operatore}")
             else:
                 print(f"Errore nella richiesta: {response.status_code}, {response.text}")
                 
@@ -146,7 +147,8 @@ while access:
                 if response.status_code == 200:
                     response=response.json()
                     id_operatore = response["operatore"]["id"] 
-                    print(f"{response["Msg"]}, ID Operatore: {id_operatore}")
+                    msg=response["Msg"]
+                    print(f"{msg}, ID Operatore: {id_operatore}")
                 else:
                     print(f"Errore nella richiesta: {response.status_code}, {response.text}")
             except requests.exceptions.RequestException as e:
@@ -161,7 +163,8 @@ while access:
             if response.status_code == 200:
                 response=response.json()
                 id_operatore = response["operatore"]["id"] 
-                print(f"{response["Msg"]}, ID Operatore: {id_operatore}")
+                msg=response["Msg"]
+                print(f"{msg}, ID Operatore: {id_operatore}")
             else:
                 print(f"Errore nella richiesta: {response.status_code}, {response.text}")
         
